@@ -45,7 +45,7 @@ export default function RootLayout({
             </h3>
             <div className="flex items-center gap-3">
               <Link href="/leagues/new">
-                  <Button variant="default" size="sm" className="text-sm">
+                  <Button variant="default" size="sm" className="text-sm text-accent">
                     <Plus className="w-4 h-4 mr-2" />
                     Giải đấu mới
                   </Button>

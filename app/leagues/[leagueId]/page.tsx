@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 export default function LeagueTablePage() {
   const { leagueId } = useParams();
@@ -126,6 +127,12 @@ export default function LeagueTablePage() {
                     </Card>
                   )}
                   {leagueData?.status === "started" && <LeagueSchedule />}
+                  {leagueData?.status === "waiting" && (
+                    <div className="text-center py-20 text-muted-foreground">
+                      <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin" />
+                      Lịch thi đấu sẽ xuất hiện khi giải đấu bắt đầu.
+                    </div>
+                  )}
                 </motion.div>
               </TabsContent>
             )}

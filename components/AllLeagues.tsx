@@ -96,11 +96,7 @@ export default function AllLeaguesPage() {
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 items-stretch">
           {items.map((league) => {
             const handleClick = () => {
-              if (league.status === "waiting") {
-                router.push(`/leagues/${league.id}/join`);
-              } else {
-                router.push(`/leagues/${league.id}`);
-              }
+              router.push(`/leagues/${league.id}`);
             };
 
             return (

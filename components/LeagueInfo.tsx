@@ -28,7 +28,7 @@ export default function LeagueInfo() {
     );
     const end = new Date(start);
     end.setDate(start.getDate() + days);
-    return end.toISOString().split("T")[0];
+    return end.toLocaleDateString("vi-VN");
   }
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function LeagueInfo() {
 
           {leagueInfo.status === "waiting" && (
             <div className="pt-4">
-              <Button className="w-full" onClick={handleStartLeague}>
+              <Button className="w-full text-accent" onClick={handleStartLeague}>
                 🚀 Bắt đầu giải đấu
               </Button>
             </div>
