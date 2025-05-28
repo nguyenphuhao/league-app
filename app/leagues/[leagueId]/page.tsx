@@ -11,13 +11,17 @@ import { ref, onValue, update } from "firebase/database";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function LeagueTablePage() {
   const { leagueId } = useParams();
-  const [activeTab, setActiveTab] = useState<"schedule" | "leaderboard">("schedule");
+  const [activeTab, setActiveTab] = useState<"schedule" | "leaderboard">(
+    "schedule"
+  );
   const [leagueData, setLeagueData] = useState<any>(null);
   const [canFinish, setCanFinish] = useState(false);
   const [winners, setWinners] = useState<string[]>([]);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const leagueRef = ref(db, `leagues/${leagueId}`);
@@ -50,9 +54,36 @@ export default function LeagueTablePage() {
     await update(ref(db, `leagues/${leagueId}`), { status: "finished" });
   };
 
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/leagues/${leagueId}/join`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       <LeagueInfo />
+
+      {/* 🔗 Copy Link Section */}
+      {leagueData?.status === "waiting" && (
+        <div className="flex justify-between items-center px-2 py-3 bg-muted rounded-md border">
+          <div className="text-sm break-all">
+            <span className="font-medium">Link tham gia: </span>
+            <a
+              href={`/leagues/${leagueId}/join`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline hover:text-blue-300"
+            >
+              {`${window.location.origin}/leagues/${leagueId}/join`}
+            </a>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleCopyLink}>
+            {copied ? "✅ Đã sao chép" : "📋 Sao chép"}
+          </Button>
+        </div>
+      )}
 
       <Tabs
         defaultValue="schedule"
@@ -83,7 +114,9 @@ export default function LeagueTablePage() {
                   {leagueData?.status === "finished" && winners.length > 0 && (
                     <Card className="bg-muted mt-6">
                       <CardHeader>
-                        <CardTitle className="text-xl">🎉 Kết quả chung cuộc</CardTitle>
+                        <CardTitle className="text-xl">
+                          🎉 Kết quả chung cuộc
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3 text-lg font-medium">
                         <p>🥇 Giải Nhất: {winners[0]}</p>
@@ -92,8 +125,7 @@ export default function LeagueTablePage() {
                       </CardContent>
                     </Card>
                   )}
-                  {leagueData?.status === "started" && (<LeagueSchedule />)}
-                  
+                  {leagueData?.status === "started" && <LeagueSchedule />}
                 </motion.div>
               </TabsContent>
             )}

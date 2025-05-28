@@ -34,7 +34,7 @@ export default function AddNewLeague() {
       leaderboard: {},
     });
     setShowConfirm(false);
-    router.push(`/leagues/${newRef.key}/start`);
+    router.push(`/leagues/${newRef.key}`);
   };
 
   return (
