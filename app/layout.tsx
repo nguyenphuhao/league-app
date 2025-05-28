@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -39,41 +39,48 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {/* 👉 Header with Drawer */}
-          <header className="sticky top-0 z-50 bg-card border-b px-4 py-3 flex justify-between items-center">
-            <h1 className="text-xl font-bold tracking-tight"><a href="/">⚽ hipages League App</a></h1>
-
-            <Drawer>
-              <DrawerTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent
-                className="h-screen w-full px-4 py-4 border-r border-border bg-popover"
-              >
-                <DrawerHeader>
-                  <DrawerTitle className="text-lg">📋 Menu</DrawerTitle>
-                </DrawerHeader>
-                <nav className="flex flex-col gap-3 mt-2">
-                  {menuItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`text-base font-medium hover:underline ${
-                        pathname === item.href ? "text-primary" : ""
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </nav>
-                <DrawerClose asChild>
-                  <Button variant="ghost" className="mt-6 w-full">
-                    Đóng
+          <header className="z-50 bg-card border-b px-4 flex justify-between items-center py-3">
+            <h3 className="text-xl font-bold tracking-tight">
+              <a href="/">⚽ HIP League</a>
+            </h3>
+            <div className="flex items-center gap-3">
+              <Link href="/leagues/new">
+                  <Button variant="default" size="sm" className="text-sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Giải đấu mới
                   </Button>
-                </DrawerClose>
-              </DrawerContent>
-            </Drawer>
+                </Link>
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="h-screen w-full px-4 py-4 border-r border-border bg-popover">
+                  <DrawerHeader>
+                    <DrawerTitle className="text-lg">📋 Menu</DrawerTitle>
+                  </DrawerHeader>
+                  <nav className="flex flex-col gap-3 mt-2">
+                    {menuItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`text-base font-medium hover:underline ${
+                          pathname === item.href ? "text-primary" : ""
+                        }`}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </nav>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" className="mt-6 w-full">
+                      Đóng
+                    </Button>
+                  </DrawerClose>
+                </DrawerContent>
+              </Drawer>
+            </div>
           </header>
 
           {/* 👉 Main Content */}
