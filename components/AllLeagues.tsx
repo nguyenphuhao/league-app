@@ -103,7 +103,7 @@ export default function AllLeaguesPage() {
               <Card
                 key={league.id}
                 onClick={handleClick}
-                className="cursor-pointer hover:shadow-xl transition duration-300 h-full dark:bg-gray-800"
+                className="cursor-pointer hover:shadow-xl transition duration-300 h-full"
               >
                 <CardHeader>
                   <CardTitle className="truncate">{league.name}</CardTitle>
@@ -125,7 +125,7 @@ export default function AllLeaguesPage() {
                       className="w-full"
                       variant="default"
                     >
-                      ➕ Tham gia
+                       Tham gia
                     </Button>
                   )}
                 </CardContent>
