@@ -40,7 +40,7 @@ export default function RootLayout({
         >
           {/* 👉 Header with Drawer */}
           <header className="sticky top-0 z-50 bg-card border-b px-4 py-3 flex justify-between items-center">
-            <h1 className="text-xl font-bold tracking-tight">⚽ hipages League App</h1>
+            <h1 className="text-xl font-bold tracking-tight"><a href="/">⚽ hipages League App</a></h1>
 
             <Drawer>
               <DrawerTrigger asChild>

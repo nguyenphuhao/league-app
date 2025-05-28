@@ -116,7 +116,7 @@ export default function AllLeaguesPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
-                  <p>📅 Bắt đầu: {league.createdAt}</p>
+                  <p>📅 Bắt đầu: {new Date(league.createdAt).toLocaleDateString("vi-VN")}</p>
                   <p>🔚 Kết thúc: {league.estimatedEndDate || "Chưa đặt"}</p>
                   <p>👥 Người chơi: {league.playersCount}</p>
 
