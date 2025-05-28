@@ -5,12 +5,7 @@ import { db } from "@/lib/firebase";
 import { get, onValue, ref, update } from "firebase/database";
 import { useEffect, useState } from "react";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -34,10 +29,7 @@ export default function StartLeaguePage() {
         );
       case "started":
         return (
-          <Badge
-            variant="outline"
-            className="text-green-400 border-green-400"
-          >
+          <Badge variant="outline" className="text-green-400 border-green-400">
             ⚽ Đang thi đấu
           </Badge>
         );
@@ -126,7 +118,9 @@ export default function StartLeaguePage() {
     <div className="max-w-2xl mx-auto p-6">
       <Card>
         <CardHeader className="flex justify-between items-center">
-          <CardTitle className="text-xl font-bold">Thông tin giải đấu</CardTitle>
+          <CardTitle className="text-xl font-bold">
+            Thông tin giải đấu
+          </CardTitle>
           <Badge
             variant="outline"
             onClick={handleCopyLink}
@@ -151,25 +145,37 @@ export default function StartLeaguePage() {
                 </p>
 
                 <div>
-                  <strong>
+                  <strong className="block mb-2">
                     Người chơi đã đăng ký{" "}
                     <Badge className="text-accent">{playerCount}</Badge>
                   </strong>
-                  {league.players && (
-                    <ul className="list-disc list-inside ml-4 space-y-1">
-                      {Object.entries(league.players).map(
-                        ([id, player]: any) => (
-                          <li
+
+                  <div className="space-y-2">
+                    {Object.entries(league.players || {}).map(
+                      ([id, player]: any) => {
+                        const name =
+                          typeof player === "string" ? player : player.name;
+                        const joined = new Date(player.joinedAt).toLocaleString(
+                          "vi-VN"
+                        );
+
+                        return (
+                          <div
                             key={id}
-                            className="flex justify-between items-center"
+                            className="flex items-center justify-between p-3 rounded-md bg-muted hover:bg-muted/80 transition"
                           >
-                            <span>
-                              {typeof player === "string"
-                                ? player
-                                : `${player.name} (joined: ${new Date(
-                                    player.joinedAt
-                                  ).toLocaleString("vi-VN")})`}
-                            </span>
+                            <div className="flex items-center gap-3">
+                              <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                                {name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="text-sm">
+                                <div className="font-medium">{name}</div>
+                                <div className="text-muted-foreground text-xs">
+                                  Tham gia: {joined}
+                                </div>
+                              </div>
+                            </div>
+
                             {league.status === "waiting" && (
                               <Button
                                 variant="ghost"
@@ -180,11 +186,11 @@ export default function StartLeaguePage() {
                                 ❌
                               </Button>
                             )}
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  )}
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
               </div>
             </>

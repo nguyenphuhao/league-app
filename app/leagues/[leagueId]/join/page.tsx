@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 
 const leagueFormat: any = {
   'round-robin': 'Đấu vòng tròn',
-}
+};
 
 export default function JoinLeaguePage() {
   const { leagueId } = useParams();
@@ -35,8 +35,19 @@ export default function JoinLeaguePage() {
     const leagueRef = ref(db, `leagues/${leagueId}`);
     const unsubscribe = onValue(leagueRef, (snapshot) => {
       const data = snapshot.val();
-      if (data && data.status === 'waiting') {
+      if (data?.status === 'waiting') {
         setLeague(data);
+
+        // 🔁 Kiểm tra localStorage
+        const storedPlayer = localStorage.getItem(`league_${leagueId}_player`);
+        if (storedPlayer && data.players) {
+          const exists = Object.values(data.players).some(
+            (p: any) => p?.name?.toLowerCase() === storedPlayer.toLowerCase()
+          );
+          if (exists) {
+            router.push(`/leagues/${leagueId}`);
+          }
+        }
       }
     });
     return () => unsubscribe();
@@ -49,6 +60,10 @@ export default function JoinLeaguePage() {
       name: playerName,
       joinedAt: new Date().toISOString(),
     });
+
+    // 💾 Lưu tên người chơi vào localStorage
+    localStorage.setItem(`league_${leagueId}_player`, playerName);
+
     setOpen(false);
     router.push(`/leagues/${leagueId}`);
   };
@@ -108,7 +123,7 @@ export default function JoinLeaguePage() {
           <DialogFooter>
             <div className="flex gap-2 justify-end">
               <Button variant="ghost" onClick={() => setOpen(false)}>Huỷ</Button>
-              <Button className='text-accent' onClick={handleConfirmJoin}>Xác nhận</Button>
+              <Button className="text-accent" onClick={handleConfirmJoin}>Xác nhận</Button>
             </div>
           </DialogFooter>
         </DialogContent>
