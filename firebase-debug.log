@@ -1,0 +1,34 @@
+[debug] [2025-05-27T22:15:43.682Z] ----------------------------------------------------------------------
+[debug] [2025-05-27T22:15:43.684Z] Command:       /Users/hipages/.nvm/versions/node/v20.19.0/bin/node /Users/hipages/.nvm/versions/node/v20.19.0/bin/firebase init
+[debug] [2025-05-27T22:15:43.684Z] CLI Version:   14.4.0
+[debug] [2025-05-27T22:15:43.684Z] Platform:      darwin
+[debug] [2025-05-27T22:15:43.684Z] Node Version:  v20.19.0
+[debug] [2025-05-27T22:15:43.684Z] Time:          Wed May 28 2025 05:15:43 GMT+0700 (Indochina Time)
+[debug] [2025-05-27T22:15:43.684Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-27T22:15:43.687Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-27T22:15:43.687Z] > authorizing via signed-in user (nguyenphuhao.it@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/hipages/Projects/cbtw/game-league
+
+[debug] [2025-05-27T22:16:05.738Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (/Users/hipages/.nvm/versions/node/v20.19.0/lib/node_modules/firebase-tools/node_modules/@inquirer/core/dist/commonjs/lib/create-prompt.js:101:37)
+    at Interface.emit (node:events:524:28)
+    at Interface.emit (node:domain:489:12)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1125:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:264:20)
+    at ReadStream.emit (node:events:536:35)
+    at ReadStream.emit (node:domain:489:12)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+[error] 
+[error] Error: An unexpected error has occurred.
