@@ -47,7 +47,6 @@ export default function LeagueInfo() {
     router.push(`/leagues/${leagueId}/start`);
   };
 
-
   const hasJoined = () => {
     const storedPlayer = localStorage.getItem(`league_${leagueId}_player`);
     if (storedPlayer && leagueInfo?.players) {
@@ -62,19 +61,58 @@ export default function LeagueInfo() {
     leagueInfo && (
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-xl">{leagueInfo.name} {hasJoined() && (
-            <Badge className="text-accent bg-green-300">Đã đăng ký</Badge>
-          )}</CardTitle>
+          <CardTitle className="text-xl">
+            {leagueInfo.name}{" "}
+            {hasJoined() && (
+              <Badge className="text-accent bg-green-300">Đã đăng ký</Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
-          
           <p>
             📅 Bắt đầu:{" "}
             {new Date(leagueInfo.createdAt).toLocaleDateString("vi-VN")}
           </p>
-          <p>👥 Người tham gia: {leagueInfo.playerCount}</p>
-          
           <p>⏳ Dự kiến kết thúc: {leagueInfo.estimatedEnd}</p>
+          {leagueInfo.status === "waiting" && leagueInfo.playerCount > 0 && (
+            <div>
+              <strong className="block mb-2">
+                👥 Người chơi đã đăng ký{" "}
+                <Badge className="text-accent">{leagueInfo.playerCount}</Badge>
+              </strong>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {Object.entries(leagueInfo.players || {}).map(
+                  ([id, player]: any) => {
+                    const name =
+                      typeof player === "string" ? player : player.name;
+                    const joined = new Date(player.joinedAt).toLocaleString(
+                      "vi-VN"
+                    );
+
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center justify-between p-3 rounded-md bg-muted hover:bg-muted/80 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                            {name?.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="text-sm">
+                            <div className="font-medium">{name}</div>
+                            <div className="text-muted-foreground text-xs">
+                              Tham gia: {joined}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+          )}
 
           {leagueInfo.status === "waiting" && (
             <div className="pt-4">
