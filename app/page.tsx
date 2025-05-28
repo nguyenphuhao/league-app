@@ -1,5 +1,4 @@
 import AllLeagues from "@/components/AllLeagues";
-import LeaderboardTable from "@/components/Leaderboard";
 
 export default function HomePage() {
   return (

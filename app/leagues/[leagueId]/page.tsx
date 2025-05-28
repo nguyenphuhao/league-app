@@ -7,54 +7,47 @@ import LeagueInfo from "@/components/LeagueInfo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { ref, get, update } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function LeagueTablePage() {
   const { leagueId } = useParams();
-  const [activeTab, setActiveTab] = useState<"schedule" | "leaderboard">(
-    "schedule"
-  );
+  const [activeTab, setActiveTab] = useState<"schedule" | "leaderboard">("schedule");
   const [leagueData, setLeagueData] = useState<any>(null);
   const [canFinish, setCanFinish] = useState(false);
-  const [winners, setWinners] = useState<any[]>([]);
+  const [winners, setWinners] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const snap = await get(ref(db, `leagues/${leagueId}`));
-      const data = snap.val();
+    const leagueRef = ref(db, `leagues/${leagueId}`);
+
+    const unsubscribe = onValue(leagueRef, (snapshot) => {
+      const data = snapshot.val();
       setLeagueData(data);
 
-      // Kiểm tra tất cả trận đã có kết quả
-      const matches = data.matches || {};
+      const matches = data?.matches || {};
       const allPlayed = Object.values(matches).every(
         (m: any) => m.played && m.scoreA !== null && m.scoreB !== null
       );
-      setCanFinish(allPlayed && data.status !== "finished");
 
-      // Lấy danh sách người thắng
-      if (data.status === "finished" || allPlayed) {
-        const sorted = Object.entries(data.leaderboard || {})
-          .sort(([, a]: any, [, b]: any) => b.points - a.points)
-          .slice(0, 3)
-          .map(([name]) => name);
-        setWinners(sorted);
-      }
-    };
-    fetchData();
+      const eligibleToFinish = allPlayed && data.status === "started";
+      setCanFinish(eligibleToFinish);
+
+      // Update winners
+      const leaderboard = data?.leaderboard || {};
+      const top3 = Object.entries(leaderboard)
+        .sort(([, a]: any, [, b]: any) => b.points - a.points)
+        .slice(0, 3)
+        .map(([name]) => name);
+      setWinners(top3);
+    });
+
+    return () => unsubscribe();
   }, [leagueId]);
 
   const handleFinishLeague = async () => {
     await update(ref(db, `leagues/${leagueId}`), { status: "finished" });
-    const snap = await get(ref(db, `leagues/${leagueId}/leaderboard`));
-    const sorted = Object.entries(snap.val() || {})
-      .sort(([, a]: any, [, b]: any) => b.points - a.points)
-      .slice(0, 3)
-      .map(([name]) => name);
-    setWinners(sorted);
-    setCanFinish(false);
   };
 
   return (
@@ -90,9 +83,7 @@ export default function LeagueTablePage() {
                   {leagueData?.status === "finished" && winners.length > 0 && (
                     <Card className="bg-muted mt-6">
                       <CardHeader>
-                        <CardTitle className="text-xl">
-                          🎉 Kết quả chung cuộc
-                        </CardTitle>
+                        <CardTitle className="text-xl">🎉 Kết quả chung cuộc</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3 text-lg font-medium">
                         <p>🥇 Giải Nhất: {winners[0]}</p>
@@ -122,7 +113,7 @@ export default function LeagueTablePage() {
         </div>
       </Tabs>
 
-      {canFinish && (
+      {canFinish && leagueData?.status === "started" && (
         <Button
           className="sticky bottom-0 w-full py-6 text-lg font-bold mt-4"
           variant="destructive"

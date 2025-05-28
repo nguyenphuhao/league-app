@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { onValue, ref } from "firebase/database";
 
@@ -11,9 +11,11 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function LeagueInfo() {
   const { leagueId } = useParams();
+  const router = useRouter();
   const [leagueInfo, setLeagueInfo] = useState<any>(null);
 
   function calculateEstimatedEnd(players: any) {
@@ -38,10 +40,15 @@ export default function LeagueInfo() {
         createdAt: data.createdAt,
         playerCount: Object.keys(data.players || {}).length,
         estimatedEnd: calculateEstimatedEnd(data.players),
+        status: data.status || "waiting",
       });
     });
     return () => unsubscribe();
   }, [leagueId]);
+
+  const handleStartLeague = () => {
+    router.push(`/leagues/${leagueId}/start`);
+  };
 
   return (
     leagueInfo && (
@@ -50,9 +57,17 @@ export default function LeagueInfo() {
           <CardTitle className="text-xl">{leagueInfo.name}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
-          <p>📅 Bắt đầu: {new Date(leagueInfo.createdAt).toLocaleDateString()}</p>
+          <p>📅 Bắt đầu: {new Date(leagueInfo.createdAt).toLocaleDateString("vi-VN")}</p>
           <p>👥 Người tham gia: {leagueInfo.playerCount}</p>
           <p>⏳ Dự kiến kết thúc: {leagueInfo.estimatedEnd}</p>
+
+          {leagueInfo.status === "waiting" && (
+            <div className="pt-4">
+              <Button className="w-full" onClick={handleStartLeague}>
+                🚀 Bắt đầu giải đấu
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     )

@@ -227,7 +227,7 @@ export default function LeagueSchedule() {
               </div>
               <div className="text-right">
                 {match.played ? (
-                  <Badge className="text-xl py-2 px-4">
+                  <Badge className=" text-accent text-xl py-2 px-4">
                     {match.scoreA} - {match.scoreB}
                   </Badge>
                 ) : (
