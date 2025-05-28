@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase';
-import { onValue, ref, set } from 'firebase/database';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { db } from "@/lib/firebase";
+import { onValue, ref, set } from "firebase/database";
 import {
   Dialog,
   DialogContent,
@@ -11,15 +11,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 const leagueFormat: any = {
-  'round-robin': 'Đấu vòng tròn',
+  "round-robin": "Đấu vòng tròn",
 };
 
 export default function JoinLeaguePage() {
@@ -27,7 +27,7 @@ export default function JoinLeaguePage() {
   const router = useRouter();
 
   const [league, setLeague] = useState<any>(null);
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState("");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function JoinLeaguePage() {
     const leagueRef = ref(db, `leagues/${leagueId}`);
     const unsubscribe = onValue(leagueRef, (snapshot) => {
       const data = snapshot.val();
-      if (data?.status === 'waiting') {
+      if (data?.status === "waiting") {
         setLeague(data);
 
         // 🔁 Kiểm tra localStorage
@@ -78,13 +78,55 @@ export default function JoinLeaguePage() {
           {league ? (
             <>
               <div className="space-y-2 text-sm">
-                <p><strong>Tên:</strong> {league.name}</p>
-                <p><strong>Ngày tạo:</strong> {new Date(league.createdAt).toLocaleString()}</p>
                 <p>
-                  <strong>Người tham gia:</strong>{' '}
-                  <Badge>{Object.keys(league.players || {}).length}</Badge>
+                  <strong>Tên:</strong> {league.name}
                 </p>
-                <p><strong>Thể thức:</strong> {leagueFormat[league.format]}</p>
+                <p>
+                  <strong>Ngày tạo:</strong>{" "}
+                  {new Date(league.createdAt).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Thể thức:</strong> {leagueFormat[league.format]}
+                </p>
+                <div>
+                  <strong className="block mb-2">
+                    👥 Người chơi đã đăng ký{" "}
+                    <Badge className="text-accent">
+                      {league.players.length || 0}
+                    </Badge>
+                  </strong>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Object.entries(league.players || {}).map(
+                      ([id, player]: any) => {
+                        const name =
+                          typeof player === "string" ? player : player.name;
+                        const joined = new Date(player.joinedAt).toLocaleString(
+                          "vi-VN"
+                        );
+
+                        return (
+                          <div
+                            key={id}
+                            className="flex items-center justify-between p-3 rounded-md bg-muted hover:bg-muted/80 transition"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                                {name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="text-sm">
+                                <div className="font-medium">{name}</div>
+                                <div className="text-muted-foreground text-xs">
+                                  Tham gia: {joined}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -107,7 +149,9 @@ export default function JoinLeaguePage() {
               </Button>
             </>
           ) : (
-            <p className="text-muted-foreground">Không tìm thấy thông tin giải đấu hoặc giải đã bắt đầu.</p>
+            <p className="text-muted-foreground">
+              Không tìm thấy thông tin giải đấu hoặc giải đã bắt đầu.
+            </p>
           )}
         </CardContent>
       </Card>
@@ -117,13 +161,18 @@ export default function JoinLeaguePage() {
           <DialogHeader>
             <DialogTitle>Xác nhận tham gia</DialogTitle>
             <DialogDescription>
-              Bạn có chắc muốn tham gia giải đấu <strong>{league?.name}</strong> không?
+              Bạn có chắc muốn tham gia giải đấu <strong>{league?.name}</strong>{" "}
+              không?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={() => setOpen(false)}>Huỷ</Button>
-              <Button className="text-accent" onClick={handleConfirmJoin}>Xác nhận</Button>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Huỷ
+              </Button>
+              <Button className="text-accent" onClick={handleConfirmJoin}>
+                Xác nhận
+              </Button>
             </div>
           </DialogFooter>
         </DialogContent>
