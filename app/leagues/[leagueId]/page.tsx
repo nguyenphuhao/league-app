@@ -92,7 +92,8 @@ export default function LeagueTablePage() {
                       </CardContent>
                     </Card>
                   )}
-                  <LeagueSchedule />
+                  {leagueData?.status === "started" && (<LeagueSchedule />)}
+                  
                 </motion.div>
               </TabsContent>
             )}
