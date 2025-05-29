@@ -167,14 +167,14 @@ export default function Leaderboard() {
                   <CardTitle className="text-base flex justify-between items-center">
                     <div className="flex items-center gap-2 font-bold">
                       <span
-                        className={`rounded-full px-2 py-1 text-xs text-black ${
+                        className={`rounded-full px-2 py-1 text-xs ${
                           idx === 0
-                            ? "bg-yellow-400"
+                            ? "bg-yellow-400 text-black"
                             : idx === 1
-                            ? "bg-gray-300"
+                            ? "bg-gray-300 text-black"
                             : idx === 2
-                            ? "bg-orange-400"
-                            : "bg-muted"
+                            ? "bg-orange-400 text-gray-800"
+                            : "bg-muted text-accent-foreground"
                         }`}
                       >
                         #{idx + 1}
