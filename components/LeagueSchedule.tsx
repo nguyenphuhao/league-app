@@ -256,7 +256,7 @@ export default function LeagueSchedule() {
                 <Badge
                   variant="outline"
                   className={`${
-                    match.played && match.scoreA > match.scoreB
+                    match.played && match.scoreA >= match.scoreB
                       ? "bg-primary text-accent"
                       : ""
                   } text-md`}
@@ -267,7 +267,7 @@ export default function LeagueSchedule() {
                 <Badge
                   variant="outline"
                   className={`${
-                    match.played && match.scoreB > match.scoreA
+                    match.played && match.scoreB >= match.scoreA
                       ? "bg-primary text-accent"
                       : ""
                   } text-md`}
