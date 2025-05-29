@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { SearchWithDialogHint } from "./SearchWithDialogHint";
+import moment from "moment";
 
 export default function LeagueSchedule() {
   const { leagueId } = useParams();
@@ -329,22 +330,31 @@ export default function LeagueSchedule() {
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(id, match)}
-                  >
-                    Cập nhật
-                  </Button>
-                  {match.played && (
+                <div className="flex gap-2 items-center justify-between">
+                  <div className="flex gap-x-3">
                     <Button
                       size="sm"
-                      variant="destructive"
-                      onClick={() => handleUndo(id)}
+                      variant="outline"
+                      onClick={() => handleEdit(id, match)}
                     >
-                      Huỷ kết quả
+                      Cập nhật
                     </Button>
+                    {match.played && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleUndo(id)}
+                        >
+                          Huỷ kết quả
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  {match.played && (
+                    <div className="self-end font-mono text-xs text-muted-foreground font-extralight italic">
+                      Updated {moment(match.updatedAt).fromNow()}
+                    </div>
                   )}
                 </div>
               )}
