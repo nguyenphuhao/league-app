@@ -2,20 +2,51 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { get, onValue, ref, update } from "firebase/database";
+import { onValue, ref, update } from "firebase/database";
 import { useEffect, useState } from "react";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { calculateEstimatedEnd } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { calculateEstimatedEnd, isAdminUser } from "@/lib/utils";
+import {AuthProvider} from "@/components/AuthGuard";
 
-export default function StartLeaguePage() {
+function StartLeaguePage() {
   const { leagueId } = useParams();
   const router = useRouter();
   const [league, setLeague] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
+
+  useEffect(() => {
+
+    const leagueRef = ref(db, `leagues/${leagueId}`);
+    const unsubscribe = onValue(leagueRef, (snapshot) => {
+      const data = snapshot.val();
+
+      // ✅ Redirect nếu status không phải 'waiting'
+      if (data?.status !== "waiting") {
+        router.push(`/leagues/${leagueId}`);
+        return;
+      }
+
+      setLeague(data);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [leagueId, router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] text-muted-foreground">
+        <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+        Đang tải dữ liệu...
+      </div>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -45,15 +76,11 @@ export default function StartLeaguePage() {
     }
   };
 
-  useEffect(() => {
-    const leagueRef = ref(db, `leagues/${leagueId}`);
-    const unsubscribe = onValue(leagueRef, (snapshot) => {
-      setLeague(snapshot.val());
-    });
-    return () => unsubscribe();
-  }, [leagueId]);
-
   const handleStart = async () => {
+    if (!isAdminUser()) {
+      alert("Bạn không có quyền bắt đầu giải đấu!");
+      return;
+    }
     if (!league || !league.players) return;
 
     const playerList = Object.values(league.players).map(
@@ -108,6 +135,10 @@ export default function StartLeaguePage() {
   };
 
   const handleRemovePlayer = async (playerId: string) => {
+    if (!isAdminUser()) {
+      alert("Bạn không có quyền xoá người chơi!");
+      return;
+    }
     await update(ref(db, `leagues/${leagueId}/players`), {
       [playerId]: null,
     });
@@ -132,88 +163,74 @@ export default function StartLeaguePage() {
           </Badge>
         </CardHeader>
         <CardContent className="space-y-4">
-          {league && (
-            <>
+          <div className="space-y-2">
+            <p>
+              <strong>Tên giải:</strong> {league.name}
+            </p>
+            <p>
+              <strong>Ngày tạo:</strong>{" "}
+              {new Date(league.createdAt || "").toLocaleString("vi-VN")}
+            </p>
+            <p>
+              <strong>Trạng thái:</strong> {getStatusBadge(league.status)}
+            </p>
+
+            <div>
+              <strong className="block mb-2">
+                Người chơi đã đăng ký{" "}
+                <Badge className="text-accent">{playerCount}</Badge>
+              </strong>
+
               <div className="space-y-2">
-                <p>
-                  <strong>Tên giải:</strong> {league.name}
-                </p>
-                <p>
-                  <strong>Ngày tạo:</strong>{" "}
-                  {new Date(league.createdAt || "").toLocaleString("vi-VN")}
-                </p>
-                <p>
-                  <strong>Trạng thái:</strong> {getStatusBadge(league.status)}
-                </p>
+                {Object.entries(league.players || {}).map(
+                  ([id, player]: any) => {
+                    const name =
+                      typeof player === "string" ? player : player.name;
+                    const joined = new Date(player.joinedAt).toLocaleString(
+                      "vi-VN"
+                    );
 
-                <div>
-                  <strong className="block mb-2">
-                    Người chơi đã đăng ký{" "}
-                    <Badge className="text-accent">{playerCount}</Badge>
-                  </strong>
-
-                  <div className="space-y-2">
-                    {Object.entries(league.players || {}).map(
-                      ([id, player]: any) => {
-                        const name =
-                          typeof player === "string" ? player : player.name;
-                        const joined = new Date(player.joinedAt).toLocaleString(
-                          "vi-VN"
-                        );
-
-                        return (
-                          <div
-                            key={id}
-                            className="flex items-center justify-between p-3 rounded-md bg-muted hover:bg-muted/80 transition"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                                {name?.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="text-sm">
-                                <div className="font-medium">{name}</div>
-                                <div className="text-muted-foreground text-xs">
-                                  Tham gia: {joined}
-                                </div>
-                              </div>
-                            </div>
-
-                            {league.status === "waiting" && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-red-500 hover:text-red-700"
-                                onClick={() => setPlayerToRemove(id)}
-                              >
-                                ❌
-                              </Button>
-                            )}
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center justify-between p-3 rounded-md bg-muted hover:bg-muted/80 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                            {name?.charAt(0).toUpperCase()}
                           </div>
-                        );
-                      }
-                    )}
-                  </div>
-                </div>
+                          <div className="text-sm">
+                            <div className="font-medium">{name}</div>
+                            <div className="text-muted-foreground text-xs">
+                              Tham gia: {joined}
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => setPlayerToRemove(id)}
+                        >
+                          ❌
+                        </Button>
+                      </div>
+                    );
+                  }
+                )}
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {league?.status === "waiting" && playerCount >= 3 && (
-        <Button
-          className="sticky bottom-0 w-full py-6 text-accent text-lg font-semibold mt-6"
-          onClick={handleStart}
-        >
-          🚀 Bắt đầu giải đấu
-        </Button>
-      )}
-
-      {league?.status === "waiting" && playerCount < 3 && (
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          ⚠️ Cần ít nhất 3 người chơi để bắt đầu giải đấu
-        </p>
-      )}
+      <Button
+        className="sticky bottom-0 w-full py-6 text-accent text-lg font-semibold mt-6"
+        onClick={handleStart}
+      >
+        🚀 Bắt đầu giải đấu
+      </Button>
 
       {playerToRemove && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -237,3 +254,11 @@ export default function StartLeaguePage() {
     </div>
   );
 }
+
+export default () => {
+  return (
+    <AuthProvider>
+      <StartLeaguePage />
+    </AuthProvider>
+  );
+};

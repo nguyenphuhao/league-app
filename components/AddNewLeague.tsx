@@ -1,33 +1,37 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { db } from '@/lib/firebase';
-import { push, ref } from 'firebase/database';
-import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { db } from "@/lib/firebase";
+import { push, ref, set } from "firebase/database";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
+import { isAdminUser } from "@/lib/utils";
 
 export default function AddNewLeague() {
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
 
   const handleConfirmCreate = async () => {
-    const leaguesRef = ref(db, 'leagues');
+    if (!isAdminUser()) {
+      alert("Bạn không có quyền tạo giải đấu mới.");
+      return;
+    }
+    const leaguesRef = ref(db, "leagues");
     const newRef = await push(leaguesRef, {
       name,
-      status: 'waiting',
-      format: 'round-robin',
+      status: "waiting",
+      format: "round-robin",
       createdAt: new Date().toISOString(),
       players: {},
       matches: {},
@@ -55,13 +59,26 @@ export default function AddNewLeague() {
             />
           </div>
           <Label htmlFor="league-name">Thể thức: Vòng Tròn</Label>
-          <Button onClick={() => setShowConfirm(true)} className="w-full text-accent">
+          <Button
+            onClick={() => setShowConfirm(true)}
+            className="w-full text-accent"
+            disabled={!name.trim()}
+          >
             Tạo giải đấu
           </Button>
         </CardContent>
       </Card>
 
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <Dialog
+        open={showConfirm}
+        onOpenChange={() => {
+          if (!isAdminUser()) {
+            alert("Bạn không có quyền tạo giải đấu mới.");
+            return;
+          }
+          setShowConfirm(false);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Xác nhận tạo giải đấu</DialogTitle>

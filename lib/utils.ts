@@ -18,3 +18,8 @@ export function calculateEstimatedEnd(players: any) {
   console.log(end);
   return end.toLocaleDateString("vi-VN");
 }
+
+export function isAdminUser(): boolean {
+  if (typeof window === "undefined") return false; // SSR safety
+  return localStorage.getItem("role") === "admin";
+}

@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "./ui/badge";
 import { calculateEstimatedEnd } from "@/lib/utils";
+import { AuthProvider } from "./AuthGuard";
 
 export default function LeagueInfo() {
   const { leagueId } = useParams();
@@ -102,16 +103,18 @@ export default function LeagueInfo() {
             </div>
           )}
 
-          {leagueInfo.status === "waiting" && (
-            <div className="pt-4">
-              <Button
-                className="w-full text-accent"
-                onClick={handleStartLeague}
-              >
-                🚀 Bắt đầu giải đấu
-              </Button>
-            </div>
-          )}
+          <AuthProvider ignoreMessage={true}>
+            {leagueInfo.status === "waiting" && (
+              <div className="pt-4">
+                <Button
+                  className="w-full text-accent"
+                  onClick={handleStartLeague}
+                >
+                  🚀 Bắt đầu giải đấu
+                </Button>
+              </div>
+            )}
+          </AuthProvider>
         </CardContent>
       </Card>
     )

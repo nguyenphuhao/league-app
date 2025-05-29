@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 const leagueFormat: any = {
   "round-robin": "Đấu vòng tròn",
@@ -29,12 +30,17 @@ export default function JoinLeaguePage() {
   const [league, setLeague] = useState<any>(null);
   const [playerName, setPlayerName] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!leagueId) return;
     const leagueRef = ref(db, `leagues/${leagueId}`);
     const unsubscribe = onValue(leagueRef, (snapshot) => {
       const data = snapshot.val();
+      if (data?.status === "started") {
+        setLeague(null);
+        router.push(`/leagues/${leagueId}`);
+      }
       if (data?.status === "waiting") {
         setLeague(data);
 
@@ -49,6 +55,7 @@ export default function JoinLeaguePage() {
           }
         }
       }
+      setLoading(false);
     });
     return () => unsubscribe();
   }, [leagueId]);
@@ -67,6 +74,16 @@ export default function JoinLeaguePage() {
     setOpen(false);
     router.push(`/leagues/${leagueId}`);
   };
+
+  // 🌀 UI khi loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] text-muted-foreground">
+        <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+        Đang tải dữ liệu giải đấu...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
