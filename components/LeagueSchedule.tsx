@@ -79,7 +79,7 @@ export default function LeagueSchedule() {
     const matchRef = ref(db, `leagues/${leagueId}/matches/${id}`);
     const snapshot = await get(matchRef);
     const match = snapshot.val();
-    const { playerA, playerB } = match;
+    const { playerA, playerB, scoreA: oldA, scoreB: oldB } = match;
 
     const boardRef = ref(db, `leagues/${leagueId}/leaderboard`);
     const boardSnap = await get(boardRef);
@@ -98,22 +98,60 @@ export default function LeagueSchedule() {
     const a = { ...init, ...board[playerA] };
     const b = { ...init, ...board[playerB] };
 
-    const scoreA = Number(editScores.scoreA);
-    const scoreB = Number(editScores.scoreB);
+    // New scores
+    const newA = Number(editScores.scoreA);
+    const newB = Number(editScores.scoreB);
 
-    if (isNaN(scoreA) || isNaN(scoreB)) {
+    if (isNaN(newA) || isNaN(newB)) {
       alert("Vui lòng nhập số hợp lệ cho tỷ số.");
       return;
     }
 
+    // Nếu đã có kết quả cũ → trừ ra
+    if (match.played) {
+      const oldScoreA = Number(oldA);
+      const oldScoreB = Number(oldB);
+
+      a.played -= 1;
+      b.played -= 1;
+
+      a.goalsFor -= oldScoreA;
+      a.goalsAgainst -= oldScoreB;
+
+      b.goalsFor -= oldScoreB;
+      b.goalsAgainst -= oldScoreA;
+
+      if (oldScoreA > oldScoreB) {
+        a.win -= 1;
+        b.loss -= 1;
+        a.points -= 3;
+      } else if (oldScoreA < oldScoreB) {
+        b.win -= 1;
+        a.loss -= 1;
+        b.points -= 3;
+      } else {
+        a.draw -= 1;
+        b.draw -= 1;
+        a.points -= 1;
+        b.points -= 1;
+      }
+    }
+
+    // Thêm kết quả mới
     a.played += 1;
     b.played += 1;
 
-    if (scoreA > scoreB) {
+    a.goalsFor += newA;
+    a.goalsAgainst += newB;
+
+    b.goalsFor += newB;
+    b.goalsAgainst += newA;
+
+    if (newA > newB) {
       a.win += 1;
       b.loss += 1;
       a.points += 3;
-    } else if (scoreA < scoreB) {
+    } else if (newA < newB) {
       b.win += 1;
       a.loss += 1;
       b.points += 3;
@@ -124,20 +162,15 @@ export default function LeagueSchedule() {
       b.points += 1;
     }
 
-    a.goalsFor += scoreA;
-    a.goalsAgainst += scoreB;
-
-    b.goalsFor += scoreB;
-    b.goalsAgainst += scoreA;
-
+    // Cập nhật dữ liệu
     await update(boardRef, {
       [playerA]: a,
       [playerB]: b,
     });
 
     await update(matchRef, {
-      scoreA,
-      scoreB,
+      scoreA: newA,
+      scoreB: newB,
       played: true,
       updatedAt: Date.now(),
     });
