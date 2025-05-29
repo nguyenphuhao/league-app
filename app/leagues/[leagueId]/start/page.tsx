@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { calculateEstimatedEnd } from "@/lib/utils";
 
 export default function StartLeaguePage() {
   const { leagueId } = useParams();
@@ -93,6 +94,7 @@ export default function StartLeaguePage() {
       leaderboard,
       status: "started",
       startedAt: new Date().toISOString(),
+      estimatedEndDate: calculateEstimatedEnd(league.players),
     });
 
     router.push(`/leagues/${leagueId}`);

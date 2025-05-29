@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { SearchWithDialogHint } from "./SearchWithDialogHint";
 
 export default function LeagueSchedule() {
   const { leagueId } = useParams();
@@ -15,6 +16,10 @@ export default function LeagueSchedule() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editScores, setEditScores] = useState({ scoreA: 0, scoreB: 0 });
   const [status, setStatus] = useState<string | null>(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "played" | "unplayed"
+  >("all");
 
   useEffect(() => {
     const statusRef = ref(db, `leagues/${leagueId}/status`);
@@ -29,8 +34,8 @@ export default function LeagueSchedule() {
     const matchRef = ref(db, `leagues/${leagueId}/matches`);
     const snapshot = await get(matchRef);
     const data = snapshot.val() || {};
-    const sorted = Object.entries(data).sort((a, b) =>
-      a[0].localeCompare(b[0])
+    const sorted = Object.entries(data).sort(
+      (a: any, b: any) => (b[1].updatedAt || 0) - (a[1].updatedAt || 0)
     );
     setMatches(sorted);
   };
@@ -38,6 +43,31 @@ export default function LeagueSchedule() {
   useEffect(() => {
     if (status === "started") fetchMatches();
   }, [leagueId, status]);
+
+  function matchPlayersQuery(match: any, query: string) {
+    if (!query.includes("|")) return false;
+    const [kw1, kw2] = query
+      .toLowerCase()
+      .split("|")
+      .map((kw) => kw.trim());
+    const playerA = match.playerA.toLowerCase();
+    const playerB = match.playerB.toLowerCase();
+    return (
+      (playerA.includes(kw1) && playerB.includes(kw2)) ||
+      (playerA.includes(kw2) && playerB.includes(kw1))
+    );
+  }
+
+  const filteredMatches = matches.filter(([_, match]) => {
+    const keyword = searchKeyword.trim().toLowerCase();
+    const matchStatus = match.played ? "played" : "unplayed";
+    if (statusFilter !== "all" && matchStatus !== statusFilter) return false;
+    if (keyword.includes("|")) return matchPlayersQuery(match, keyword);
+    return (
+      match.playerA.toLowerCase().includes(keyword) ||
+      match.playerB.toLowerCase().includes(keyword)
+    );
+  });
 
   const handleEdit = (id: string, match: any) => {
     setEditingId(id);
@@ -70,17 +100,14 @@ export default function LeagueSchedule() {
     const scoreA = Number(editScores.scoreA);
     const scoreB = Number(editScores.scoreB);
 
-    // Check for invalid input
     if (isNaN(scoreA) || isNaN(scoreB)) {
       alert("Vui lòng nhập số hợp lệ cho tỷ số.");
       return;
     }
 
-    // Cập nhật số trận
     a.played += 1;
     b.played += 1;
 
-    // Cập nhật kết quả thắng / thua / hòa
     if (scoreA > scoreB) {
       a.win += 1;
       b.loss += 1;
@@ -96,14 +123,12 @@ export default function LeagueSchedule() {
       b.points += 1;
     }
 
-    // Cập nhật số bàn thắng / thua
     a.goalsFor += scoreA;
     a.goalsAgainst += scoreB;
 
     b.goalsFor += scoreB;
     b.goalsAgainst += scoreA;
 
-    // Cập nhật dữ liệu vào DB
     await update(boardRef, {
       [playerA]: a,
       [playerB]: b,
@@ -113,6 +138,7 @@ export default function LeagueSchedule() {
       scoreA,
       scoreB,
       played: true,
+      updatedAt: Date.now(),
     });
 
     setEditingId(null);
@@ -139,11 +165,9 @@ export default function LeagueSchedule() {
     const parsedScoreA = Number(scoreA);
     const parsedScoreB = Number(scoreB);
 
-    // Trừ số trận
     a.played -= 1;
     b.played -= 1;
 
-    // Trừ kết quả
     if (parsedScoreA > parsedScoreB) {
       a.win -= 1;
       b.loss -= 1;
@@ -159,14 +183,11 @@ export default function LeagueSchedule() {
       b.points -= 1;
     }
 
-    // Trừ bàn thắng / thua
     a.goalsFor = (a.goalsFor ?? 0) - parsedScoreA;
     a.goalsAgainst = (a.goalsAgainst ?? 0) - parsedScoreB;
-
     b.goalsFor = (b.goalsFor ?? 0) - parsedScoreB;
     b.goalsAgainst = (b.goalsAgainst ?? 0) - parsedScoreA;
 
-    // Cập nhật dữ liệu vào DB
     await update(boardRef, {
       [playerA]: a,
       [playerB]: b,
@@ -176,6 +197,7 @@ export default function LeagueSchedule() {
       played: false,
       scoreA: null,
       scoreB: null,
+      updatedAt: Date.now(),
     });
 
     await fetchMatches();
@@ -192,11 +214,38 @@ export default function LeagueSchedule() {
 
   return (
     <div>
-      {status === "started" && (
-        <h1 className="text-2xl font-bold mb-6">📅 Lịch thi đấu</h1>
-      )}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+        <div className="relative w-full sm:flex-1">
+          <SearchWithDialogHint
+            value={searchKeyword}
+            onChanged={setSearchKeyword}
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            variant={statusFilter === "all" ? "default" : "outline"}
+            onClick={() => setStatusFilter("all")}
+          >
+            Tất cả
+          </Button>
+          <Button
+            variant={statusFilter === "played" ? "default" : "outline"}
+            onClick={() => setStatusFilter("played")}
+          >
+            Đã thi đấu
+          </Button>
+          <Button
+            variant={statusFilter === "unplayed" ? "default" : "outline"}
+            onClick={() => setStatusFilter("unplayed")}
+          >
+            Chưa thi đấu
+          </Button>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {matches.map(([id, match]: any, index) => (
+        {filteredMatches.map(([id, match]: any, index) => (
           <div
             key={id}
             className="rounded-lg border border-gray-700 bg-card p-4 text-card-foreground shadow-sm"

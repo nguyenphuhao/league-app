@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { calculateEstimatedEnd } from "@/lib/utils";
 
 interface League {
   id: string;
@@ -65,7 +66,7 @@ export default function AllLeaguesPage() {
           id,
           name: league.name,
           createdAt: league.createdAt,
-          estimatedEndDate: league.estimatedEndDate,
+          estimatedEndDate: calculateEstimatedEnd(league.players),
           playersCount: league.players ? Object.keys(league.players).length : 0,
           status: league.status || "waiting",
         })

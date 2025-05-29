@@ -8,24 +8,12 @@ import { onValue, ref } from "firebase/database";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "./ui/badge";
+import { calculateEstimatedEnd } from "@/lib/utils";
 
 export default function LeagueInfo() {
   const { leagueId } = useParams();
   const router = useRouter();
   const [leagueInfo, setLeagueInfo] = useState<any>(null);
-
-  function calculateEstimatedEnd(players: any) {
-    const count = Object.keys(players || {}).length;
-    const matchCount = (count * (count - 1)) / 2;
-    const dayPerMatch = 0.5;
-    const days = Math.ceil(matchCount * dayPerMatch);
-    const start = new Date(
-      players?.[Object.keys(players)[0]]?.joinedAt || new Date()
-    );
-    const end = new Date(start);
-    end.setDate(start.getDate() + days);
-    return end.toLocaleDateString("vi-VN");
-  }
 
   useEffect(() => {
     const leagueRef = ref(db, `leagues/${leagueId}`);
