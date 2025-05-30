@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { SearchWithDialogHint } from "./SearchWithDialogHint";
 import moment from "moment";
+import { MatchScoreDisplay } from "./MatchScoreDisplay";
+import { MatchScoreEdit } from "./MatchScoreEdit";
 
 export default function LeagueSchedule() {
   const { leagueId } = useParams();
@@ -279,40 +281,24 @@ export default function LeagueSchedule() {
       </div>
 
       <div className="space-y-4">
+        {/* Tổng số trận đấu */}
+        <div className="mb-2 text-sm font-medium">
+          Tổng số trận đấu: {filteredMatches.length}
+        </div>
         {filteredMatches.map(([id, match]: any, index) => (
           <div
             key={id}
+            data-match-id={id}
             className="rounded-lg border border-gray-700 bg-card p-4 text-card-foreground shadow-sm"
           >
-            <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <Badge
-                  variant="outline"
-                  className={`${
-                    match.played && match.scoreA >= match.scoreB
-                      ? "bg-primary text-accent"
-                      : ""
-                  } text-md`}
-                >
-                  {match.playerA}
-                </Badge>
-                <span> - </span>
-                <Badge
-                  variant="outline"
-                  className={`${
-                    match.played && match.scoreB >= match.scoreA
-                      ? "bg-primary text-accent"
-                      : ""
-                  } text-md`}
-                >
-                  {match.playerB}
-                </Badge>
+            {/* Số thứ tự trận đấu */}
+            <div className="flex flex-row justify-between items-start mb-2">
+              <div className="text-xs text-muted-foreground font-mono">
+                Trận {index + 1}
               </div>
-              <div className="text-right">
+              <div className="self-end text-xs text-muted-foreground font-extralight italic">
                 {match.played ? (
-                  <Badge className=" text-accent text-xl py-2 px-4">
-                    {match.scoreA} - {match.scoreB}
-                  </Badge>
+                  <div>Updated {moment(match.updatedAt).fromNow()}</div>
                 ) : (
                   <Badge className="bg-background text-yellow-400 font-medium">
                     Chưa thi đấu
@@ -320,9 +306,70 @@ export default function LeagueSchedule() {
                 )}
               </div>
             </div>
+            {/* Hiển thị người chơi và tỷ số */}
 
-            <div className="mt-4">
-              {editingId === id ? (
+            {editingId === id ? (
+              <>
+                <MatchScoreEdit
+                  editable={editingId === id}
+                  match={match}
+                  scoreA={editScores.scoreA}
+                  scoreB={editScores.scoreB}
+                  onChangeScoreA={(scoreA) =>
+                    setEditScores((s) => ({
+                      ...s,
+                      scoreA,
+                    }))
+                  }
+                  onChangeScoreB={(scoreB) =>
+                    setEditScores((s) => ({
+                      ...s,
+                      scoreB,
+                    }))
+                  }
+                />
+                <div className="flex pt-3 items-center w-full justify-end flex-col gap-3">
+                  <Button className="w-full max-w-xs xs:w-auto" size="sm" onClick={() => handleSave(id)}>
+                    Lưu
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-full max-w-xs xs:w-auto"
+                    onClick={() => setEditingId(null)}
+                  >
+                    Huỷ
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <MatchScoreDisplay match={match} />
+                <div className="flex pt-3 items-center w-full justify-end flex-col gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full max-w-xs xs:w-auto"
+                    onClick={() => handleEdit(id, match)}
+                  >
+                    Cập nhật
+                  </Button>
+                  {match.played && (
+                    <Button
+                      size="sm"
+                      className="w-full max-w-xs xs:w-auto"
+                      variant="destructive"
+                      onClick={() => handleUndo(id)}
+                    >
+                      Huỷ kết quả
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* <div className="mt-4">
+              {editingId !== id && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Input
@@ -349,49 +396,10 @@ export default function LeagueSchedule() {
                       className="w-16"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => handleSave(id)}>
-                      Lưu
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setEditingId(null)}
-                    >
-                      Huỷ
-                    </Button>
-                  </div>
+                  
                 </div>
-              ) : (
-                <div className="flex gap-2 items-center justify-between">
-                  <div className="flex gap-x-3">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(id, match)}
-                    >
-                      Cập nhật
-                    </Button>
-                    {match.played && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleUndo(id)}
-                        >
-                          Huỷ kết quả
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                  {match.played && (
-                    <div className="self-end font-mono text-xs text-muted-foreground font-extralight italic">
-                      Updated {moment(match.updatedAt).fromNow()}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              ) }
+            </div> */}
           </div>
         ))}
       </div>
